@@ -1,0 +1,50 @@
+type Status {
+  _id: String
+  status: String
+  comments: [Comment]
+  likes: [User]
+  user: User
+}
+
+type Comment {
+  _id: String
+  comment: String
+  user: User
+  status: Status
+}
+
+type User {
+  _id: String
+  name: String
+  email: String
+  password: String
+  statuses: [Status]
+  comments: [Comment]
+  likes:[Status]
+  token: String
+}
+
+type Like {
+  status: Status
+  user: User
+}
+
+type Query {
+  users: [User]
+  me: User
+  comments: [Comment]
+  statuses: [Status]
+}
+
+type Mutation {
+  registerUser(name: String, email: String, password: String): User
+  login(email: String, password: String): User
+  addStatus(status: String): Status
+  deleteStatus(_id: String, userId: String): Status
+  editStatus(_id: String, status: String, userId: String): Status
+  addComment(comment: String, status: String): Comment
+  deleteComment(_id: String, userId: String): Comment
+  editComment(_id:String, comment:String, userId:String): Comment
+  like(status:String): Like
+  dislike(status:String): Like
+}
