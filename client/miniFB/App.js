@@ -60,7 +60,7 @@ YellowBox.ignoreWarnings([
 
 const TabStack = TabNavigator(
   {
-    Home: { screen: HomeScreen },
+    Home: { screen:  HomeScreen},
     Profile: { screen: ProfileScreen },
   },
   {
