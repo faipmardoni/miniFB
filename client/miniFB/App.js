@@ -7,17 +7,17 @@
 import React, { Component } from 'react';
 import { YellowBox } from "react-native";
 
-import { createStackNavigator } from 'react-navigation';
+import { SwitchNavigator, StackNavigator, createStackNavigator, TabNavigator, TabBarBottom } from 'react-navigation';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from "react-apollo";
-
+import { TouchableWithoutFeedback, Keyboard } from "react-native";
 import LoginScreen from './src/screens/Login';
 import HomeScreen from './src/screens/Home';
 import RegisterScreen from './src/screens/Register';
-import AddCommentScreen from './src/screens/AddComment';
 import CommentScreen from "./src/screens/Comment";
 import ProfileScreen from "./src/screens/Profile";
 import { signIn, signOut, getToken } from "./src/util";
+import { Icon, Root } from 'native-base';
 
 // const a = signIn("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjViMjdiOTNiMTYwMjlmNmY4NzdjYzlhMiIsIm5hbWUiOiJGYWlwIE1hcmRvbmkiLCJlbWFpbCI6ImFkbWluQG1haWwuY29tIiwiaWF0IjoxNTI5ODQxNzk3fQ.kHayTEpzLhFdyr3ac-8eLAe0VugJZVvfcxcahz8_eZM")
 
@@ -35,20 +35,7 @@ const client = new ApolloClient({
   }
 });
 
-const RootStack = createStackNavigator({
-  Home: HomeScreen,
-  Profile: {
-    screen: ProfileScreen,
-    navigationOptions: {
-      title: "Profile",
-      headerLeft: null,
-    }
-  },
-  AddComment: AddCommentScreen,
-  Comment: CommentScreen
-}, {
-    initialRouteName: 'Home',
-  });
+const AppStack = StackNavigator({ Comment: CommentScreen });
 
 const AuthStack = createStackNavigator({
   Login: {
@@ -66,8 +53,49 @@ const AuthStack = createStackNavigator({
 YellowBox.ignoreWarnings([
   "Warning: isMounted(...) is deprecated",
   "Module RCTImageLoader",
-  "Remote debugger"
+  "Remote debugger",
+  "Method",
+  ""
 ]);
+
+const TabStack = TabNavigator(
+  {
+    Home: { screen: HomeScreen },
+    Profile: { screen: ProfileScreen },
+  },
+  {
+    navigationOptions: ({ navigation }) => ({
+      tabBarIcon: ({ focused, tintColor }) => {
+        const { routeName } = navigation.state;
+        let iconName;
+        if (routeName === 'Home') {
+          iconName = `ios-home${focused ? '' : '-outline'}`;
+        } else if (routeName === 'Profile') {
+          iconName = `ios-person${focused ? '' : '-outline'}`;
+        }
+        return <Icon name={iconName} color={tintColor} />
+      },
+    }),
+    tabBarComponent: TabBarBottom,
+    tabBarPosition: 'bottom',
+    tabBarOptions: {
+      activeTintColor: 'tomato',
+      inactiveTintColor: 'gray',
+    },
+    animationEnabled: false,
+    swipeEnabled: false,
+  }
+);
+
+const Main = SwitchNavigator(
+  {
+    Tab: TabStack,
+    Stack: AppStack,
+  },
+  {
+    initialRouteName: 'Tab',
+  }
+);
 
 // type Props = {};
 export default class App extends Component {
@@ -98,10 +126,15 @@ export default class App extends Component {
 
   render() {
     return (
-      <ApolloProvider client={client}>
-        {this.state.loggedIn ? <RootStack screenProps={{ changeLoginState: this.handleChangeLoginState }} /> : <AuthStack screenProps={{ changeLoginState: this.handleChangeLoginState }} 
-        />}
-      </ApolloProvider>
+      <Root>
+        <ApolloProvider client={client}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            {this.state.loggedIn ? <Main screenProps={{ changeLoginState: this.handleChangeLoginState }} /> : <AuthStack screenProps={{ changeLoginState: this.handleChangeLoginState }}
+            />}
+          </TouchableWithoutFeedback>
+        </ApolloProvider>
+      </Root>
+
     )
   }
 }

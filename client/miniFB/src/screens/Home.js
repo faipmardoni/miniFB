@@ -1,50 +1,42 @@
 import React, { Component } from "react";
-import { StyleSheet } from "react-native";
 import StatusesList from "../components/statusesList";
-import { Container, Content, Footer, FooterTab, Button, Icon } from "native-base"
+import { Container, Content } from "native-base";
+import { FETCH_STATUSES } from "../graphql/queries";
+import { graphql } from "react-apollo";
 
-const styles = StyleSheet.create({
-  container: {
-    paddingTop: 5,
-    paddingLeft: 20,
-    paddingRight: 20
-  }
-})
-
-export default class Home extends Component {
+class Home extends Component {
   static navigationOptions = {
     title: 'Home'
+  }
+
+  constructor(props) {
+    super(props)
+    this.state = {
+      refreshing: false,
+    }
+  }
+
+  async componentDidMount() {
+    await this.props.data.refetch()
+  }
+
+  _onRefresh = () => {
+    this.setState({ refreshing: true });
+    this.props.data.refetch().then(() => {
+      this.setState({ refreshing: false });
+    });
   }
 
   render() {
     const { changeLoginState } = this.props.screenProps
     return (
-      <Container>
+      <Container style={{marginTop:25}}>
         <Content>
-          <StatusesList changeLoginState={changeLoginState} navigation={{ ...this.props.navigation }} />
+          <StatusesList changeLoginState={changeLoginState} navigation={{ ...this.props.navigation }} data={this.props.data} refresh={this._onRefresh}/>
         </Content>
-        <Footer>
-          <FooterTab>
-            <Button active>
-              <Icon name="apps" />
-            </Button>
-            <Button>
-              <Icon name="camera" />
-            </Button>
-            <Button>
-              <Icon name="navigate" />
-            </Button>
-            <Button
-              onPress={(e) => {
-                e.preventDefault()
-                this.props.navigation.navigate("Profile")
-              }}
-            >
-              <Icon name="person" />
-            </Button>
-          </FooterTab>
-        </Footer>
       </Container>
     )
   }
 }
+
+export default graphql(FETCH_STATUSES)(Home);

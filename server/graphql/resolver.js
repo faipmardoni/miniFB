@@ -57,19 +57,19 @@ const resolvers = {
         console.error(error)
       }
     },
-    status: async(_, { statusId }, { user }) => {
+    status: async (_, { statusId }, { user }) => {
       try {
-        if(!user) throw new Error("Please login first");
+        if (!user) throw new Error("Please login first");
         const status = await statusModel.findById(statusId)
-        .populate('user')
-        .populate("likes")
-        .populate({
-          path:"comments",
-          populate: {
-            path: "user"
-          }
-        })
-        .exec()
+          .populate('user')
+          .populate("likes")
+          .populate({
+            path: "comments",
+            populate: {
+              path: "user"
+            }
+          })
+          .exec()
         return status
       } catch (error) {
         console.log('error', error)
@@ -127,7 +127,7 @@ const resolvers = {
         if (!newStatus) {
           throw new Error('Failed add Status');
         }
-        await userModel.findByIdAndUpdate(params.user, {
+        await userModel.findByIdAndUpdate(user.id, {
           $push: {
             statuses: newStatus._id
           }
@@ -142,6 +142,17 @@ const resolvers = {
       try {
         if (!user || user.id != userId) throw new Error('You are not permitted');
         const deletedStatus = await statusModel.findByIdAndRemove(_id).exec();
+        const comments = await commentModel.find({
+          status: _id
+        }).exec()
+        comments.forEach(async (c) => {
+          await commentModel.findByIdAndRemove(c._id).exec()
+          await userModel.findByIdAndUpdate(userId, {
+            $pop: {
+              statuses: c._id
+            }
+          }).exec()
+        })
         return deletedStatus
       } catch (error) {
         console.error(error)
@@ -162,19 +173,18 @@ const resolvers = {
 
     addComment: async (_, { comment, status }, { user }) => {
       try {
-        // if (!user) throw new Error('You are not permitted');
-        console.log(user.id)
+        if (!user) throw new Error('You are not permitted');
         const newComment = await commentModel.create({
           comment,
           user: user.id,
           status
         });
-        const addCommentToUSer = await userModel.findByIdAndUpdate(user.id, {
+        await userModel.findByIdAndUpdate(user.id, {
           $push: {
             comments: newComment._id
           }
         });
-        const addCommentToStatus = await statusModel.findByIdAndUpdate(status, {
+        await statusModel.findByIdAndUpdate(status, {
           $push: {
             comments: newComment._id
           }
@@ -242,7 +252,7 @@ const resolvers = {
         })
         return addLiketoStatus
       } catch (error) {
-        console.error(object)
+        console.error(error)
       }
     },
     dislike: async (_, { status }, { user }) => {

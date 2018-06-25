@@ -9,10 +9,13 @@ const FETCH_STATUSES = gql`
 			name
       }
       comments {
+        _id
         comment
         user {
           _id
+          email
           name
+          photo_profile
         }
       }
       user {
@@ -43,6 +46,29 @@ const FETCH_STATUS = gql`
       }
     }
   }
+`;
+
+const FETCH_ME = gql`
+  query fetch_status{
+    me {
+      _id
+      name
+      email
+      photo_profile
+      statuses {
+        _id
+        status
+      }
+      likes {
+        status
+      }
+      comments {
+        status {
+          status
+        }
+      }
+    }
+	}
 `;
 
 const LOGIN_USER = gql`
@@ -114,6 +140,51 @@ const ADD_COMMENT = gql`
   }
 `;
 
+const DELETE_COMMENT = gql`
+  mutation deleteComment ($_id:String, $userId:String!){
+    deleteComment(
+      _id:$_id, 
+      userId:$userId
+      ) {
+      _id,
+      comment
+    }
+  }
+`;
+
+const EDIT_COMMENT = gql`
+  mutation editComment($_id: String, $comment:String, $userId:String){
+    editComment(
+      _id:$_id
+      comment:$comment
+      userId:$userId
+    ){
+      _id,
+      comment
+    }
+  }
+`;
+
+const LIKE = gql`
+  mutation like($status: String){
+    like(status:$status){
+      status {
+        _id
+      }
+    }
+  }
+`;
+
+const DISLIKE = gql`
+  mutation dislike($status: String){
+    dislike(status:$status){
+      status {
+        _id
+      }
+    }
+  }
+`;
+
 export {
   REGISTER_USER,
   LOGIN_USER,
@@ -122,5 +193,10 @@ export {
   DELETE_STATUS,
   EDIT_STATUS,
   ADD_COMMENT,
-  FETCH_STATUS
+  DELETE_COMMENT,
+  EDIT_COMMENT,
+  FETCH_STATUS,
+  FETCH_ME,
+  LIKE,
+  DISLIKE
 }
