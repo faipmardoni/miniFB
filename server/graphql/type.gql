@@ -22,6 +22,7 @@ type User {
   comments: [Comment]
   likes:[Status]
   token: String
+  photo_profile: String
 }
 
 type Like {
@@ -32,8 +33,8 @@ type Like {
 type Query {
   users: [User]
   me: User
-  comments: [Comment]
   statuses: [Status]
+  status(statusId: String): Status
 }
 
 type Mutation {

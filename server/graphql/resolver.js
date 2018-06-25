@@ -9,8 +9,8 @@ const resolvers = {
     users: async (_, params, { user }) => {
       try {
         // if (user) {
-          let users = await userModel.find();
-          return users;
+        let users = await userModel.find();
+        return users;
         // } else {
         //   throw new Error('You are not permitted');
         // }
@@ -55,6 +55,24 @@ const resolvers = {
         return statuses;
       } catch (error) {
         console.error(error)
+      }
+    },
+    status: async(_, { statusId }, { user }) => {
+      try {
+        if(!user) throw new Error("Please login first");
+        const status = await statusModel.findById(statusId)
+        .populate('user')
+        .populate("likes")
+        .populate({
+          path:"comments",
+          populate: {
+            path: "user"
+          }
+        })
+        .exec()
+        return status
+      } catch (error) {
+        console.log('error', error)
       }
     }
   },
@@ -144,16 +162,19 @@ const resolvers = {
 
     addComment: async (_, { comment, status }, { user }) => {
       try {
-        if (!user) throw new Error('You are not permitted');
+        // if (!user) throw new Error('You are not permitted');
+        console.log(user.id)
         const newComment = await commentModel.create({
-          comment, user, status
+          comment,
+          user: user.id,
+          status
         });
-        userModel.findByIdAndUpdate(user, {
+        const addCommentToUSer = await userModel.findByIdAndUpdate(user.id, {
           $push: {
             comments: newComment._id
           }
         });
-        statusModel.findByIdAndUpdate(status, {
+        const addCommentToStatus = await statusModel.findByIdAndUpdate(status, {
           $push: {
             comments: newComment._id
           }
