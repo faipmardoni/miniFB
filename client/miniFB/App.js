@@ -22,7 +22,7 @@ import { Icon, Root } from 'native-base';
 // const a = signIn("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjViMjdiOTNiMTYwMjlmNmY4NzdjYzlhMiIsIm5hbWUiOiJGYWlwIE1hcmRvbmkiLCJlbWFpbCI6ImFkbWluQG1haWwuY29tIiwiaWF0IjoxNTI5ODQxNzk3fQ.kHayTEpzLhFdyr3ac-8eLAe0VugJZVvfcxcahz8_eZM")
 
 const client = new ApolloClient({
-  uri: "http://172.20.10.5:3000/graphql",
+  uri: "https://mini.faipmardoni.net/graphql",
   request: async (operation) => {
     const token = await getToken()
     if (token) {
